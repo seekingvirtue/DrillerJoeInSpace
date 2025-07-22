@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combat Mode Movement Tests</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #001122;
+            color: #00FF00;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00FFFF;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            background: #003366;
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        button:hover {
+            background: #00FF00;
+            color: #001122;
+        }
+        
+        .test-output {
+            background: #000011;
+            border: 2px solid #003366;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .test-summary {
+            background: #001133;
+            border: 2px solid #0066CC;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .passed {
+            color: #00FF00;
+        }
+        
+        .failed {
+            color: #FF3333;
+        }
+        
+        .info {
+            color: #00FFFF;
+        }
+        
+        .warning {
+            color: #FFFF00;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #001a33;
+            border-left: 4px solid #00FF00;
+        }
+        
+        .code-preview {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #CCCCCC;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Combat Mode Movement Tests</h1>
+        
+        <div class="section">
+            <h3 class="info">Test Coverage:</h3>
+            <ul>
+                <li><strong>Crosshair Tests:</strong> Fixed positioning, center alignment</li>
+                <li><strong>World Movement:</strong> Input handling, velocity, boundaries</li>
+                <li><strong>Natural Controls:</strong> Directional movement integration</li>
+                <li><strong>State Management:</strong> Reset behavior, initialization</li>
+            </ul>
+        </div>
+        
+        <div class="test-controls">
+            <button onclick="runMovementTests()">🚀 Run Movement Tests</button>
+            <button onclick="runCrosshairTests()">🎯 Run Crosshair Tests</button>
+            <button onclick="runAllTests()">✨ Run All Tests</button>
+            <button onclick="clearOutput()">🧹 Clear Output</button>
+        </div>
+        
+        <div class="test-summary" id="summary" style="display: none;">
+            <h3>📊 Test Summary</h3>
+            <div id="summaryContent"></div>
+        </div>
+        
+        <div class="test-output" id="output">
+            <span class="info">Click "Run All Tests" to test crosshair and world movement functionality...</span>
+        </div>
+        
+        <div class="section">
+            <h3 class="info">What These Tests Verify:</h3>
+            <div class="code-preview">
+// Crosshair Tests:
+✅ Crosshair always renders at exact center (400, 300)
+✅ Crosshair position independent of world movement
+✅ Proper crosshair line and dot placement
+
+// World Movement Tests:
+✅ Natural directional controls (right → world moves left)
+✅ Velocity application and friction physics
+✅ Boundary constraints and position clamping
+✅ World state reset on combat entry
+
+// Integration Tests:
+✅ Complete movement flow from input to rendering
+✅ Natural feeling controls validation
+            </div>
+        </div>
+    </div>
+
+    <!-- Include required game files -->
+    <script src="../src/game-modes/CombatMode.js"></script>
+    <script src="CombatModeMovementTests.js"></script>
+
+    <script>
+        let testOutput = document.getElementById('output');
+        let testSummary = document.getElementById('summary');
+        let summaryContent = document.getElementById('summaryContent');
+        
+        // Override console.log to capture test output
+        let originalLog = console.log;
+        let testLogs = [];
+        
+        function captureConsole() {
+            testLogs = [];
+            console.log = function(...args) {
+                testLogs.push(args.join(' '));
+                originalLog.apply(console, args);
+            };
+        }
+        
+        function restoreConsole() {
+            console.log = originalLog;
+        }
+        
+        function displayOutput() {
+            testOutput.innerHTML = testLogs.join('\n');
+            restoreConsole();
+        }
+        
+        function runAllTests() {
+            captureConsole();
+            clearOutput();
+            
+            try {
+                const testSuite = new CombatModeMovementTests();
+                const results = testSuite.runTests();
+                
+                displayOutput();
+                showSummary(results);
+            } catch (error) {
+                testOutput.innerHTML = `<span class="failed">❌ Test execution failed: ${error.message}</span>`;
+                restoreConsole();
+            }
+        }
+        
+        function runCrosshairTests() {
+            captureConsole();
+            clearOutput();
+            
+            try {
+                const testSuite = new CombatModeMovementTests();
+                const crosshairTests = testSuite.tests.filter(test => 
+                    test.name.includes('Crosshair')
+                );
+                
+                console.log('🎯 Running Crosshair Tests...\n');
+                
+                let passed = 0, failed = 0;
+                const results = [];
+                
+                for (const test of crosshairTests) {
+                    try {
+                        test.test();
+                        console.log(`✅ ${test.name}`);
+                        results.push({ name: test.name, status: 'PASSED' });
+                        passed++;
+                    } catch (error) {
+                        console.log(`❌ ${test.name}: ${error.message}`);
+                        results.push({ name: test.name, status: 'FAILED', error: error.message });
+                        failed++;
+                    }
+                }
+                
+                console.log(`\n📊 Crosshair Test Results: ${passed} passed, ${failed} failed`);
+                
+                displayOutput();
+                showSummary(results);
+            } catch (error) {
+                testOutput.innerHTML = `<span class="failed">❌ Crosshair test execution failed: ${error.message}</span>`;
+                restoreConsole();
+            }
+        }
+        
+        function runMovementTests() {
+            captureConsole();
+            clearOutput();
+            
+            try {
+                const testSuite = new CombatModeMovementTests();
+                const movementTests = testSuite.tests.filter(test => 
+                    test.name.includes('World') || test.name.includes('Input') || test.name.includes('Natural') || test.name.includes('Reset')
+                );
+                
+                console.log('🚀 Running World Movement Tests...\n');
+                
+                let passed = 0, failed = 0;
+                const results = [];
+                
+                for (const test of movementTests) {
+                    try {
+                        test.test();
+                        console.log(`✅ ${test.name}`);
+                        results.push({ name: test.name, status: 'PASSED' });
+                        passed++;
+                    } catch (error) {
+                        console.log(`❌ ${test.name}: ${error.message}`);
+                        results.push({ name: test.name, status: 'FAILED', error: error.message });
+                        failed++;
+                    }
+                }
+                
+                console.log(`\n📊 Movement Test Results: ${passed} passed, ${failed} failed`);
+                
+                displayOutput();
+                showSummary(results);
+            } catch (error) {
+                testOutput.innerHTML = `<span class="failed">❌ Movement test execution failed: ${error.message}</span>`;
+                restoreConsole();
+            }
+        }
+        
+        function showSummary(results) {
+            const passed = results.filter(r => r.status === 'PASSED').length;
+            const failed = results.filter(r => r.status === 'FAILED').length;
+            
+            let summaryHtml = `
+                <div>
+                    <span class="passed">✅ Passed: ${passed}</span> | 
+                    <span class="failed">❌ Failed: ${failed}</span> | 
+                    <span class="info">📝 Total: ${results.length}</span>
+                </div>
+            `;
+            
+            if (failed > 0) {
+                summaryHtml += '<h4 class="failed">Failed Tests:</h4><ul>';
+                results.filter(r => r.status === 'FAILED').forEach(test => {
+                    summaryHtml += `<li class="failed">${test.name}: ${test.error}</li>`;
+                });
+                summaryHtml += '</ul>';
+            }
+            
+            if (passed === results.length) {
+                summaryHtml += '<div class="passed">🎉 All tests passed! Crosshair and movement systems are working correctly.</div>';
+            }
+            
+            summaryContent.innerHTML = summaryHtml;
+            testSummary.style.display = 'block';
+        }
+        
+        function clearOutput() {
+            testOutput.innerHTML = '';
+            testSummary.style.display = 'none';
+            testLogs = [];
+        }
+        
+        // Run tests automatically on page load for quick feedback
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const notice = document.createElement('div');
+                notice.innerHTML = '<span class="info">💡 Auto-running tests in 2 seconds... or click any test button above.</span>';
+                testOutput.appendChild(notice);
+                
+                setTimeout(runAllTests, 2000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

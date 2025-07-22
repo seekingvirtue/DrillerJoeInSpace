@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driller Joe In Space - Unit Tests</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000011;
+            color: #00FFFF;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        
+        #results {
+            background: #001122;
+            border: 2px solid #00FFFF;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            min-height: 400px;
+            overflow-y: auto;
+        }
+        
+        button {
+            background: #003333;
+            color: #00FFFF;
+            border: 2px solid #00FFFF;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background: #00FFFF;
+            color: #000011;
+        }
+        
+        .instructions {
+            background: #001a1a;
+            border-left: 4px solid #00FFFF;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 DRILLER JOE IN SPACE 🚀</h1>
+    <h2 style="text-align: center;">Unit Test Runner</h2>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <ul>
+            <li>Click "Run All Tests" to execute the test suite</li>
+            <li>Tests will run in the browser console and display results below</li>
+            <li>Check browser console (F12) for detailed output</li>
+            <li>Tests are isolated and safe to run multiple times</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center;">
+        <button onclick="runTests()">🧪 Run All Tests</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+    
+    <div id="results">
+        <p style="color: #CCCCCC;">Click "Run All Tests" to begin testing...</p>
+    </div>
+
+    <!-- Load Test Framework -->
+    <script src="TestFramework.js"></script>
+    
+    <!-- Load Core Game Files for Testing -->
+    <script src="../src/core/GameState.js"></script>
+    <script src="../src/core/Canvas.js"></script>
+    
+    <!-- Load Test Files -->
+    <script src="GameStateTests.js"></script>
+    <script src="CanvasTests.js"></script>
+    
+    <script>
+        // Redirect console.log to display in results div
+        const originalLog = console.log;
+        const resultsDiv = document.getElementById('results');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            // Display in results div
+            const message = args.join(' ');
+            const p = document.createElement('p');
+            p.style.margin = '5px 0';
+            
+            // Style based on message type
+            if (message.includes('✅ PASS')) {
+                p.style.color = '#00FF00';
+            } else if (message.includes('❌ FAIL')) {
+                p.style.color = '#FF0000';
+            } else if (message.includes('🚀') || message.includes('📊')) {
+                p.style.color = '#FFFF00';
+                p.style.fontWeight = 'bold';
+            } else if (message.includes('🎉')) {
+                p.style.color = '#00FF00';
+                p.style.fontWeight = 'bold';
+            } else if (message.includes('⚠️')) {
+                p.style.color = '#FFA500';
+                p.style.fontWeight = 'bold';
+            }
+            
+            p.textContent = message;
+            resultsDiv.appendChild(p);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        };
+        
+        async function runTests() {
+            clearResults();
+            await unitTest.run();
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '<p style="color: #CCCCCC;">Running tests...</p>';
+        }
+    </script>
+</body>
+</html>

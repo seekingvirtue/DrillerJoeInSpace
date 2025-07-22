@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driller Joe In Space</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: #000;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <!-- Core Game Systems -->
+    <script src="src/core/Canvas.js"></script>
+    <script src="src/core/Game.js"></script>
+    <script src="src/core/GameState.js"></script>
+    
+    <!-- Game Systems -->
+    <script src="src/systems/AudioSystem.js"></script>
+    <script src="src/systems/InputSystem.js"></script>
+    <script src="src/systems/RenderSystem.js"></script>
+    
+    <!-- Game Entities -->
+    <script src="src/entities/Enemy.js"></script>
+    
+    <!-- UI Components -->
+    <script src="src/ui/Menu.js"></script>
+    
+    <!-- Game Modes -->
+    <script src="src/game-modes/MenuMode.js"></script>
+    <script src="src/game-modes/CombatMode.js"></script>
+    <script src="src/game-modes/GameOverMode.js"></script>
+    <script src="src/game-modes/StoryMode.js"></script>
+    <script src="src/game-modes/StarMapMode.js"></script>
+    <script src="src/game-modes/PlanetDescentMode.js"></script>
+    <script src="src/game-modes/AllyPlanetDescentMode.js"></script>
+    <script src="src/game-modes/EnemyPlanetMissionMode.js"></script>
+    <script src="src/game-modes/VictoryMode.js"></script>
+    <script src="src/game-modes/AsteroidStormMode.js"></script>
+
+    <!-- Game Initialization -->
+    <script>
+        // Initialize the game when page loads
+        window.addEventListener('load', () => {
+            const canvas = document.getElementById('gameCanvas');
+            window.game = new Game(canvas); // Make game globally accessible
+            window.game.start();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "name": "driller-joe-in-space",
+  "version": "0.1.0",
+  "description": "HTML5 space shooter game featuring Driller Joe's cosmic adventures",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx live-server --port=8080",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "canvas",
+    "driller-joe",
+    "space",
+    "shooter",
+    "html5-game"
+  ],
+  "author": "SeekingVirtue",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/driller-joe-in-space.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/driller-joe-in-space/issues"
+  },
+  "homepage": "https://github.com/yourusername/driller-joe-in-space#readme"
+}
