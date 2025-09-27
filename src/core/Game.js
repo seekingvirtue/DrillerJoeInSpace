@@ -10,7 +10,7 @@ class Game {
         this.gameState = new GameState();
         this.audioSystem = new AudioSystem();
         this.inputSystem = new InputSystem();
-        this.renderSystem = new RenderSystem(this.ctx);
+    this.renderSystem = new RenderSystem(this.ctx);
         
         // Game modes
         this.modes = {
@@ -77,12 +77,11 @@ class Game {
     }
     
     setupCanvas() {
-        // Ensure canvas is properly configured
-        this.canvas.width = 800;
-        this.canvas.height = 600;
-        
-        // Set canvas styling for crisp pixel rendering
-        this.ctx.imageSmoothingEnabled = false;
+        // Initialize viewport to manage logical resolution and scaling
+        // Logical resolution remains 800x600 for game math.
+        Viewport.setup(this.canvas, this.ctx, 800, 600);
+
+        // Set default text alignment in logical space
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
     }

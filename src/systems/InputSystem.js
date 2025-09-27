@@ -66,9 +66,10 @@ class InputSystem {
     }
     
     handleMouseMove(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        this.mousePos.x = event.clientX - rect.left;
-        this.mousePos.y = event.clientY - rect.top;
+        // Map client coordinates to logical canvas coordinates
+        const logical = Viewport.clientToLogical(event.clientX, event.clientY);
+        this.mousePos.x = logical.x;
+        this.mousePos.y = logical.y;
     }
     
     handleMouseDown(event) {
