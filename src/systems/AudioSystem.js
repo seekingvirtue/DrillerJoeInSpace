@@ -18,6 +18,11 @@ class AudioSystem {
         // Combat music loop tracking
         this.combatLoopCount = 0;
         this.combatMaxLoops = 3;
+        // Autoplay/scheduling state
+        this.autoplayListenersActive = false;
+        this._pendingAutoplayMusicId = null;
+        this._autoplayStartHandler = null;
+        this._scheduledMusicTimers = new Map(); // token -> timeoutId
     }
     
     init() {
@@ -462,22 +467,30 @@ class AudioSystem {
     
     handleAutoplayRestriction(musicId) {
         console.log('Autoplay restricted - music will start after user interaction');
-        
-        // Don't set up duplicate listeners if they already exist
+        // If there's already a pending autoplay for a different id, allow the new one to replace it
         if (this.autoplayListenersActive) return;
         this.autoplayListenersActive = true;
-        
-        // Create a one-time event listener for user interaction
+
+        // Save pending id and handler so it can be cancelled if mode changes
+        this._pendingAutoplayMusicId = musicId;
+
         const startMusic = () => {
-            console.log('User interaction detected, starting music...');
-            this.autoplayListenersActive = false;
-            
+            // Only start if pending id still matches
+            if (this._pendingAutoplayMusicId !== musicId) {
+                // stale - ignore
+                this._clearAutoplayListeners();
+                return;
+            }
+
+            console.log('User interaction detected, starting pending autoplay music...', musicId);
+            this._clearAutoplayListeners();
+
             // Try to play the music again
             if (this.musicTracks[musicId]) {
                 this.currentMusic = musicId;
                 this.musicAudio = this.musicTracks[musicId];
                 this.musicAudio.volume = this.musicVolume * this.masterVolume;
-                
+
                 const playPromise = this.musicAudio.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
@@ -487,22 +500,71 @@ class AudioSystem {
                     });
                 }
             }
-            
-            // Clean up listeners
-            document.removeEventListener('click', startMusic);
-            document.removeEventListener('keydown', startMusic);
-            document.removeEventListener('touchstart', startMusic);
         };
-        
+
+        this._autoplayStartHandler = startMusic;
         document.addEventListener('click', startMusic, { once: true });
         document.addEventListener('keydown', startMusic, { once: true });
         document.addEventListener('touchstart', startMusic, { once: true }); // For mobile
     }
+
+    _clearAutoplayListeners() {
+        if (this._autoplayStartHandler) {
+            try {
+                document.removeEventListener('click', this._autoplayStartHandler);
+                document.removeEventListener('keydown', this._autoplayStartHandler);
+                document.removeEventListener('touchstart', this._autoplayStartHandler);
+            } catch (e) {
+                // ignore
+            }
+        }
+        this._autoplayStartHandler = null;
+        this._pendingAutoplayMusicId = null;
+        this.autoplayListenersActive = false;
+    }
+
+    // Schedule a music play after delayMs milliseconds. Returns a token that can be passed to cancelScheduledPlay.
+    schedulePlay(musicId, delayMs) {
+        if (!this._scheduledMusicTimers) this._scheduledMusicTimers = new Map();
+        const token = Symbol('scheduled-music');
+        const timeoutId = setTimeout(() => {
+            // When firing, remove from map
+            this._scheduledMusicTimers.delete(token);
+            // Only play if music enabled
+            this.playMusic(musicId);
+        }, delayMs);
+        this._scheduledMusicTimers.set(token, timeoutId);
+        return token;
+    }
+
+    cancelScheduledPlay(token) {
+        if (!this._scheduledMusicTimers) return;
+        const tid = this._scheduledMusicTimers.get(token);
+        if (tid) {
+            clearTimeout(tid);
+            this._scheduledMusicTimers.delete(token);
+            console.log('Cancelled scheduled music play');
+        }
+    }
     
     stopMusic() {
+        // Clear any pending autoplay listeners so they don't start stale music
+        this._clearAutoplayListeners();
+
+        // Cancel any scheduled music timers
+        if (this._scheduledMusicTimers && this._scheduledMusicTimers.size > 0) {
+            for (const [token, tid] of this._scheduledMusicTimers.entries()) {
+                try { clearTimeout(tid); } catch (e) { /* ignore */ }
+            }
+            this._scheduledMusicTimers.clear();
+            console.log('Cleared scheduled music timers');
+        }
+
         if (this.musicAudio) {
-            this.musicAudio.pause();
-            this.musicAudio.currentTime = 0;
+            try {
+                this.musicAudio.pause();
+                this.musicAudio.currentTime = 0;
+            } catch (e) { /* ignore */ }
             console.log(`Stopped music: ${this.currentMusic}`);
             this.currentMusic = null;
             this.musicAudio = null;

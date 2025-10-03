@@ -144,16 +144,31 @@ class CombatMode {
         this.game.audioSystem.playSfx('alert');
         
         // Start combat music after alert finishes
-        setTimeout(() => {
-            this.game.audioSystem.playMusic('combat-theme');
-            console.log('Combat music started after alert');
-        }, this.alertDuration * (1000/60)); // Convert frames to milliseconds
+        const delayMs = this.alertDuration * (1000/60);
+        if (this.game.audioSystem && this.game.audioSystem.schedulePlay) {
+            this._scheduledMusicToken = this.game.audioSystem.schedulePlay('combat-theme', delayMs);
+        } else {
+            this._scheduledMusicToken = setTimeout(() => {
+                this.game.audioSystem.playMusic('combat-theme');
+                console.log('Combat music started after alert');
+            }, delayMs);
+        }
     }
     
     exit() {
         console.log('Exited CombatMode');
         
         // Stop combat music
+        // Cancel any scheduled music token
+        if (this._scheduledMusicToken) {
+            if (this.game.audioSystem && this.game.audioSystem.cancelScheduledPlay) {
+                this.game.audioSystem.cancelScheduledPlay(this._scheduledMusicToken);
+            } else {
+                clearTimeout(this._scheduledMusicToken);
+            }
+            this._scheduledMusicToken = null;
+        }
+
         this.game.audioSystem.stopMusic();
         console.log('Combat music stopped');
     }

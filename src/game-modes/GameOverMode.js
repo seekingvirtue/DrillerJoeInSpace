@@ -40,10 +40,14 @@ class GameOverMode {
         this.game.audioSystem.stopMusic();
         
         // Start game over music after a brief pause for dramatic effect
-        setTimeout(() => {
-            this.game.audioSystem.playMusic('gameover-theme');
-            console.log('Game over music started');
-        }, 500); // 0.5 second pause for dramatic effect
+        if (this.game.audioSystem && this.game.audioSystem.schedulePlay) {
+            this._scheduledMusicToken = this.game.audioSystem.schedulePlay('gameover-theme', 500);
+        } else {
+            this._scheduledMusicToken = setTimeout(() => {
+                this.game.audioSystem.playMusic('gameover-theme');
+                console.log('Game over music started');
+            }, 500);
+        }
         
         // Reset animation values
         this.fadeAlpha = 0;
@@ -54,6 +58,15 @@ class GameOverMode {
         console.log('Exited GameOverMode');
         
         // Stop game over music when leaving
+        if (this._scheduledMusicToken) {
+            if (this.game.audioSystem && this.game.audioSystem.cancelScheduledPlay) {
+                this.game.audioSystem.cancelScheduledPlay(this._scheduledMusicToken);
+            } else {
+                clearTimeout(this._scheduledMusicToken);
+            }
+            this._scheduledMusicToken = null;
+        }
+
         this.game.audioSystem.stopMusic();
     }
     

@@ -142,16 +142,30 @@ class AsteroidStormMode {
         this.game.audioSystem.playSfx('warningAsteroidsIncoming');
         
         // Start asteroid field music after alert finishes
-        setTimeout(() => {
-            this.game.audioSystem.playMusic('AsteroidField');
-            console.log('Asteroid field music started after alert');
-        }, this.alertDuration * (1000/60)); // Convert frames to milliseconds
+        const delayMs = this.alertDuration * (1000/60);
+        if (this.game.audioSystem && this.game.audioSystem.schedulePlay) {
+            this._scheduledMusicToken = this.game.audioSystem.schedulePlay('AsteroidField', delayMs);
+        } else {
+            this._scheduledMusicToken = setTimeout(() => {
+                this.game.audioSystem.playMusic('AsteroidField');
+                console.log('Asteroid field music started after alert');
+            }, delayMs);
+        }
     }
     
     exit() {
         console.log('Exited Asteroid Storm Mode');
         
         // Stop music
+        if (this._scheduledMusicToken) {
+            if (this.game.audioSystem && this.game.audioSystem.cancelScheduledPlay) {
+                this.game.audioSystem.cancelScheduledPlay(this._scheduledMusicToken);
+            } else {
+                clearTimeout(this._scheduledMusicToken);
+            }
+            this._scheduledMusicToken = null;
+        }
+
         this.game.audioSystem.stopMusic();
     }
     

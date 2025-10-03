@@ -119,6 +119,9 @@ class Game {
     }
     
     gameLoop() {
+        // Poll input system (gamepad update) so modes see fresh controller state
+        if (this.inputSystem && this.inputSystem.update) this.inputSystem.update();
+
         // Update current mode
         if (this.currentMode && this.currentMode.update) {
             this.currentMode.update();

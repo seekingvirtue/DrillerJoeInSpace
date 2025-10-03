@@ -64,9 +64,14 @@ class VictoryMode {
         this.game.audioSystem.stopMusic();
         
         // Start victory music after a short delay
-        setTimeout(() => {
-            this.game.audioSystem.playMusic('victory-theme');
-        }, 500);
+        if (this.game.audioSystem && this.game.audioSystem.schedulePlay) {
+            this._scheduledMusicToken = this.game.audioSystem.schedulePlay('victory-theme', 500);
+        } else {
+            // Fallback
+            this._scheduledMusicToken = setTimeout(() => {
+                this.game.audioSystem.playMusic('victory-theme');
+            }, 500);
+        }
         
         // Activate return button after 8 seconds
         setTimeout(() => {
@@ -79,6 +84,16 @@ class VictoryMode {
         console.log('Exited VictoryMode');
         
         // Stop victory music
+        // Cancel any scheduled music token and stop music
+        if (this._scheduledMusicToken) {
+            if (this.game.audioSystem && this.game.audioSystem.cancelScheduledPlay) {
+                this.game.audioSystem.cancelScheduledPlay(this._scheduledMusicToken);
+            } else {
+                clearTimeout(this._scheduledMusicToken);
+            }
+            this._scheduledMusicToken = null;
+        }
+
         this.game.audioSystem.stopMusic();
     }
     
