@@ -28,6 +28,7 @@ This game was created with love for **Driller Joe**, for all the high scores he 
 ### Controls
 - **Arrow Keys**: Navigate and move crosshair
 - **Space**: Fire weapons / Confirm actions
+- **Atari Modern Controller Wired or Wireless**
 
 ### Game Modes
 1. **Combat Mode**: First-person space combat with twin laser cannons
@@ -109,3 +110,4 @@ To Driller Joe - thank you for showing us that the real treasure isn't the high 
 ---
 
 **May your drills be sharp and your scores be high!** ⭐
+
